@@ -12,8 +12,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 import net.simplyrin.bungeefriends.utils.MessageBuilder;
 import net.simplyrin.bungeeparties.Main;
-import net.simplyrin.bungeeparties.exceptions.AlreadyJoinedException;
-import net.simplyrin.bungeeparties.exceptions.FailedAddingException;
 import net.simplyrin.bungeeparties.exceptions.NotInvitedException;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
 import net.simplyrin.bungeeparties.messages.Messages;
@@ -249,15 +247,31 @@ public class PartyCommand extends Command {
 
 					try {
 						targetParties.add(player);
-					} catch (AlreadyJoinedException e) {
-						e.printStackTrace();
-					} catch (FailedAddingException e) {
-						e.printStackTrace();
+					} catch (Exception e) {
+						this.plugin.info(player, Messages.HYPHEN);
+						this.plugin.info(player, "&c" + e.getMessage());
+						this.plugin.info(player, Messages.HYPHEN);
 					}
 					return;
 				}
 				this.plugin.info(player, Messages.HYPHEN);
 				this.plugin.info(player, "&cInvalid usage! '/party accept <player>'");
+				this.plugin.info(player, Messages.HYPHEN);
+				return;
+			}
+
+			if(args[0].equalsIgnoreCase("toggle")) {
+				boolean bool = myParties.isEnabledReceiveRequest();
+				if(bool) {
+					myParties.setEnabledReceiveRequest(false);
+					this.plugin.info(player, Messages.HYPHEN);
+					this.plugin.info(player, "&eParty invitation acceptance has been &cDisabled&e.");
+					this.plugin.info(player, Messages.HYPHEN);
+					return;
+				}
+				myParties.setEnabledReceiveRequest(true);
+				this.plugin.info(player, Messages.HYPHEN);
+				this.plugin.info(player, "&eParty invitation acceptance has been &aEnabled&e.");
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
@@ -271,7 +285,10 @@ public class PartyCommand extends Command {
 						return;
 					}
 				} catch (NotJoinedException e) {
-					e.printStackTrace();
+					this.plugin.info(player, Messages.HYPHEN);
+					this.plugin.info(player, "&c" + e.getMessage());
+					this.plugin.info(player, Messages.HYPHEN);
+					return;
 				}
 
 				this.plugin.info(player, Messages.HYPHEN);
@@ -317,6 +334,7 @@ public class PartyCommand extends Command {
 		this.plugin.info(player, "&e/party remove &7- &bRemove the player from the party");
 		this.plugin.info(player, "&e/party warp &7- &bTeleport the members of your party to your server");
 		this.plugin.info(player, "&e/party accept &7- &bAccept a party invite from the player");
+		this.plugin.info(player, "&e/party toggle &7- &bToggle acceptance of invitation.");
 		this.plugin.info(player, "&e/party disband &7- &bDisbands the party");
 		this.plugin.info(player, Messages.HYPHEN);
 	}
@@ -353,8 +371,8 @@ public class PartyCommand extends Command {
 		}
 
 		TextComponent prefix = MessageBuilder.get(this.plugin.getPrefix());
-		TextComponent invite = MessageBuilder.get("Click here ", "/party accept SimplyRin", ChatColor.GOLD, "Click to run\n/party accept SimplyRin", false);
-		TextComponent message = MessageBuilder.get("to join! You have 60 seconds to accept.", "/party accept SimplyRin", ChatColor.YELLOW, "Click to run\n/party accept SimplyRin", false);
+		TextComponent invite = MessageBuilder.get("Click here ", "/party accept " + player.getName(), ChatColor.GOLD, "Click to run\n/party accept " + player.getName(), false);
+		TextComponent message = MessageBuilder.get("to join! You have 60 seconds to accept.", "/party accept " + player.getName(), ChatColor.YELLOW, "Click to run\n/party accept " + player.getName(), false);
 
 		this.plugin.info(target, Messages.HYPHEN);
 		this.plugin.info(target, myParties.getDisplayName() + "&e has invited you to join their party!");

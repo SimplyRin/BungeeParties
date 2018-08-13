@@ -62,10 +62,11 @@ public class PartyManager {
 
 				PartyManager.this.plugin.info("Creating data for player " + player.getName() + "...");
 
-				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Name", "SimplyRin");
+				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Name", player.getName());
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Currently-Joined-Party", "NONE");
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Party-List", new ArrayList<>());
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Requests", new ArrayList<>());
+				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Toggle", true);
 			}
 		}
 
@@ -101,6 +102,15 @@ public class PartyManager {
 			return this.uuid == this.getPartyLeader().getPlayer().getUniqueId();
 		}
 
+		public PartyUtils setEnabledReceiveRequest(boolean bool) {
+			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Toggle", bool);
+			return this;
+		}
+
+		public boolean isEnabledReceiveRequest() {
+			return PartyManager.this.plugin.getConfigManager().getConfig().getBoolean("Player." + this.uuid.toString() + ".Toggle");
+		}
+
 		public UUID getUniqueId() {
 			return this.uuid;
 		}
@@ -118,13 +128,17 @@ public class PartyManager {
 				throw new FailedInvitingException("&cYou can't invite yourself to a party!");
 			}
 
+			if(!PartyManager.this.plugin.getConfigManager().getConfig().getBoolean("Player." + uuid.toString() + ".Toggle")) {
+				throw new FailedInvitingException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &chas turned off party invitation acceptance.");
+			}
+
 			List<String> list = this.getParties();
 			if(list.contains(uuid.toString())) {
 				throw new AlreadyJoinedException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &cis already in your party!");
 			}
 
 			if(!PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + uuid.toString() + ".Currently-Joined-Party").equals("NONE")) {
-				throw new AlreadyJoinedException("&cThis player is already joined the " + PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + "&c's party!");
+				throw new AlreadyJoinedException("&cThis player is already joined the party!");
 			}
 
 			List<String> requests = PartyManager.this.plugin.getConfigManager().getConfig().getStringList("Player." + this.uuid.toString() + ".Requests");
@@ -181,7 +195,7 @@ public class PartyManager {
 
 		public PartyUtils remove(UUID uuid) throws NotJoinedException {
 			if(this.uuid.toString().equals(uuid.toString())) {
-				throw new NotJoinedException("&cYOu can't remove yourself! Use /party disaband instead!");
+				throw new NotJoinedException("&cYou can't remove yourself! Use /party disaband instead!");
 			}
 
 			List<String> list = this.getParties();
