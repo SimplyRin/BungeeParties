@@ -318,6 +318,35 @@ public class PartyCommand extends Command {
 				return;
 			}
 
+			if(args[0].equalsIgnoreCase("chat")) {
+				if(args.length > 1) {
+					String message = "";
+					for (int i = 1; i < args.length; i++) {
+						message = message + args[i] + " ";
+					}
+
+					PartyUtils partyLeader;
+					try {
+						partyLeader = myParties.getPartyLeader();
+					} catch (NotJoinedException e) {
+						return;
+					}
+
+					List<String> parties = partyLeader.getParties();
+
+					this.plugin.info(partyLeader.getPlayer(), "&9Party > " + myParties.getDisplayName() + "&f: " + message);
+					for(String partyPlayerUniqueId : parties) {
+						PartyUtils member = this.plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
+						this.plugin.info(member.getPlayer(), "&9Party > " + myParties.getDisplayName() + "&f: " + message);
+					}
+					return;
+				}
+				this.plugin.info(player, Messages.HYPHEN);
+				this.plugin.info(player, "&cInvalid usage! '/party chat <message>'");
+				this.plugin.info(player, Messages.HYPHEN);
+				return;
+			}
+
 			this.invite(player, myParties, args[0]);
 			return;
 		}
@@ -328,6 +357,7 @@ public class PartyCommand extends Command {
 		this.plugin.info(player, Messages.HYPHEN);
 		this.plugin.info(player, "&aParty Commands:");
 		this.plugin.info(player, "&e/party help &7- &bPrints this help message");
+		this.plugin.info(player, "&e/party chat &7- &bSend the message to the party member");
 		this.plugin.info(player, "&e/party invite &7- &bInvites the player to your party");
 		this.plugin.info(player, "&e/party leave &7- &bLeaves the current party");
 		this.plugin.info(player, "&e/party list &7- &bLists the members of your party");

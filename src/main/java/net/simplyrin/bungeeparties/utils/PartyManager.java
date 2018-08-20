@@ -90,6 +90,11 @@ public class PartyManager {
 			return leader;
 		}
 
+		public boolean isJoinedParty() {
+			String currentlyJoinedParty = PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + this.uuid.toString() + ".Currently-Joined-Party");
+			return !currentlyJoinedParty.equals("NONE");
+		}
+
 		public PartyUtils getPartyLeader() throws NotJoinedException {
 			String currentlyJoinedParty = PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + this.uuid.toString() + ".Currently-Joined-Party");
 			if(currentlyJoinedParty.equals("NONE")) {

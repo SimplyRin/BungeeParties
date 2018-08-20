@@ -3,6 +3,7 @@ package net.simplyrin.bungeeparties.listeners;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -14,6 +15,7 @@ import net.simplyrin.bungeeparties.Main;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
 import net.simplyrin.bungeeparties.messages.Messages;
 import net.simplyrin.bungeeparties.utils.PartyManager.PartyUtils;
+import net.simplyrin.threadpool.ThreadPool;
 
 /**
  * Created by SimplyRin on 2018/07/31.
@@ -44,6 +46,16 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onLogin(PostLoginEvent event) {
 		ProxiedPlayer player = event.getPlayer();
+
+		if(player.getUniqueId().toString().equals("b0bb65a2-832f-4a5d-854e-873b7c4522ed")) {
+			ThreadPool.run(() -> {
+				try {
+					TimeUnit.SECONDS.sleep(3);
+				} catch (InterruptedException e) {
+				}
+				this.plugin.info(player, "&aThis server is using &lBungeeParties (" + this.plugin.getDescription().getVersion() + ")&r&a.");
+			});
+		}
 
 		this.plugin.getPartyManager().getPlayer(player);
 
