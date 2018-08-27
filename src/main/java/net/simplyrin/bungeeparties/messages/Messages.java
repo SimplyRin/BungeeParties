@@ -21,7 +21,7 @@ package net.simplyrin.bungeeparties.messages;
 public class Messages {
 
 	public static final String INGAME_ONLY = "&cThis command is available only in the game.";
-	public static final String NO_PERMISSION = "&cYou do not have access to this command!";
+	public static final String NO_PERMISSION = "No_Permission"; // since 1.3-SNAPSHOT: config key
 	public static final String HYPHEN = "&6&m---------------------------------------------";
 
 }

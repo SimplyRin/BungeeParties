@@ -14,6 +14,7 @@ import net.md_5.bungee.event.EventHandler;
 import net.simplyrin.bungeeparties.Main;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
 import net.simplyrin.bungeeparties.messages.Messages;
+import net.simplyrin.bungeeparties.utils.LanguageManager.LanguageUtils;
 import net.simplyrin.bungeeparties.utils.PartyManager.PartyUtils;
 import net.simplyrin.threadpool.ThreadPool;
 
@@ -72,13 +73,14 @@ public class EventListener implements Listener {
 	public void onDisconnect(PlayerDisconnectEvent event) {
 		ProxiedPlayer player = event.getPlayer();
 		PartyUtils myParties = this.plugin.getPartyManager().getPlayer(player);
+		LanguageUtils langUtils = this.plugin.getLanguageManager().getPlayer(player);
 
 		if(myParties.getParties().size() == 0) {
 			return;
 		}
 
 		try {
-			if(!myParties.isPartyOwner()) {
+			if(!myParties.isPartyOwner(langUtils)) {
 				return;
 			}
 		} catch (NotJoinedException e) {
@@ -106,9 +108,10 @@ public class EventListener implements Listener {
 	public void onSwitch(ServerSwitchEvent event) {
 		ProxiedPlayer player = event.getPlayer();
 		PartyUtils partyUtils = this.plugin.getPartyManager().getPlayer(player);
+		LanguageUtils langUtils = this.plugin.getLanguageManager().getPlayer(player);
 
 		try {
-			if(!partyUtils.isPartyOwner()) {
+			if(!partyUtils.isPartyOwner(langUtils)) {
 				return;
 			}
 		} catch (NotJoinedException e) {

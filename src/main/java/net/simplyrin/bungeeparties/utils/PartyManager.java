@@ -11,6 +11,7 @@ import net.simplyrin.bungeeparties.exceptions.FailedAddingException;
 import net.simplyrin.bungeeparties.exceptions.FailedInvitingException;
 import net.simplyrin.bungeeparties.exceptions.NotInvitedException;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
+import net.simplyrin.bungeeparties.utils.LanguageManager.LanguageUtils;
 
 /**
  * Created by SimplyRin on 2018/07/31.
@@ -81,10 +82,10 @@ public class PartyManager {
 		/**
 		 * @return Party leader
 		 */
-		public PartyUtils leaveCurrentParty() {
+		public PartyUtils leaveCurrentParty(LanguageUtils langUtils) {
 			PartyUtils leader = PartyManager.this.plugin.getPartyManager().getPlayer(PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + this.uuid.toString() + ".Currently-Joined-Party"));
 			try {
-				leader.remove(this.uuid);
+				leader.remove(this.uuid, langUtils);
 			} catch (NotJoinedException e) {
 			}
 			return leader;
@@ -95,16 +96,16 @@ public class PartyManager {
 			return !currentlyJoinedParty.equals("NONE");
 		}
 
-		public PartyUtils getPartyLeader() throws NotJoinedException {
+		public PartyUtils getPartyLeader(LanguageUtils langUtils) throws NotJoinedException {
 			String currentlyJoinedParty = PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + this.uuid.toString() + ".Currently-Joined-Party");
 			if(currentlyJoinedParty.equals("NONE")) {
-				throw new NotJoinedException("You are not joined the party!");
+				throw new NotJoinedException(langUtils.getString("Exceptions.Not-Joined"));
 			}
 			return PartyManager.this.plugin.getPartyManager().getPlayer(currentlyJoinedParty);
 		}
 
-		public boolean isPartyOwner() throws NotJoinedException {
-			return this.uuid == this.getPartyLeader().getPlayer().getUniqueId();
+		public boolean isPartyOwner(LanguageUtils langUtils) throws NotJoinedException {
+			return this.uuid == this.getPartyLeader(langUtils).getPlayer().getUniqueId();
 		}
 
 		public PartyUtils setEnabledReceiveRequest(boolean bool) {
@@ -124,45 +125,45 @@ public class PartyManager {
 			return PartyManager.this.plugin.getNameManager().getPlayer(this.uuid).getDisplayName();
 		}
 
-		public PartyUtils addRequest(ProxiedPlayer player) throws AlreadyJoinedException, FailedInvitingException {
-			return this.addRequest(player.getUniqueId());
+		public PartyUtils addRequest(ProxiedPlayer player, LanguageUtils langUtils) throws AlreadyJoinedException, FailedInvitingException {
+			return this.addRequest(player.getUniqueId(), langUtils);
 		}
 
-		public PartyUtils addRequest(UUID uuid) throws AlreadyJoinedException, FailedInvitingException {
+		public PartyUtils addRequest(UUID uuid, LanguageUtils langUtils) throws AlreadyJoinedException, FailedInvitingException {
 			if(this.uuid.toString().equals(uuid.toString())) {
-				throw new FailedInvitingException("&cYou can't invite yourself to a party!");
+				throw new FailedInvitingException(langUtils.getString("Exceptions.Cant-Invite-Self"));
 			}
 
 			if(!PartyManager.this.plugin.getConfigManager().getConfig().getBoolean("Player." + uuid.toString() + ".Toggle")) {
-				throw new FailedInvitingException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &chas turned off party invitation acceptance.");
+				throw new FailedInvitingException(langUtils.getString("Exceptions.Disable-Invite").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 
 			List<String> list = this.getParties();
 			if(list.contains(uuid.toString())) {
-				throw new AlreadyJoinedException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &cis already in your party!");
+				throw new AlreadyJoinedException(langUtils.getString("Exceptions.Already.In").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 
 			if(!PartyManager.this.plugin.getConfigManager().getConfig().getString("Player." + uuid.toString() + ".Currently-Joined-Party").equals("NONE")) {
-				throw new AlreadyJoinedException("&cThis player is already joined the party!");
+				throw new AlreadyJoinedException(langUtils.getString("Exceptions.Already.Joined"));
 			}
 
 			List<String> requests = PartyManager.this.plugin.getConfigManager().getConfig().getStringList("Player." + this.uuid.toString() + ".Requests");
 			if(requests.contains(uuid.toString())) {
-				throw new FailedInvitingException("&cYou have already invited " + PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + "&c!");
+				throw new FailedInvitingException(langUtils.getString("Exceptions.Already.Joined").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 			requests.add(uuid.toString());
 			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Requests", requests);
 			return this;
 		}
 
-		public PartyUtils removeRequest(ProxiedPlayer player) throws NotInvitedException {
-			return this.removeRequest(player.getUniqueId());
+		public PartyUtils removeRequest(ProxiedPlayer player, LanguageUtils langUtils) throws NotInvitedException {
+			return this.removeRequest(player.getUniqueId(), langUtils);
 		}
 
-		public PartyUtils removeRequest(UUID uuid) throws NotInvitedException {
+		public PartyUtils removeRequest(UUID uuid, LanguageUtils langUtils) throws NotInvitedException {
 			List<String> requests = PartyManager.this.plugin.getConfigManager().getConfig().getStringList("Player." + this.uuid.toString() + ".Requests");
 			if(!requests.contains(uuid.toString())) {
-				throw new NotInvitedException("&cYou haven't been invited to a party, or the invitation has expired!");
+				throw new NotInvitedException(langUtils.getString("Exceptions.Havent-Received-Invite"));
 			}
 			requests.remove(uuid.toString());
 			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Requests", requests);
@@ -173,18 +174,18 @@ public class PartyManager {
 			return PartyManager.this.plugin.getConfigManager().getConfig().getStringList("Player." + this.uuid.toString() + ".Party-List");
 		}
 
-		public PartyUtils add(ProxiedPlayer player) throws AlreadyJoinedException, FailedAddingException {
-			return this.add(player.getUniqueId());
+		public PartyUtils add(ProxiedPlayer player, LanguageUtils langUtils) throws AlreadyJoinedException, FailedAddingException {
+			return this.add(player.getUniqueId(), langUtils);
 		}
 
-		public PartyUtils add(UUID uuid) throws AlreadyJoinedException, FailedAddingException {
+		public PartyUtils add(UUID uuid, LanguageUtils langUtils) throws AlreadyJoinedException, FailedAddingException {
 			if(this.uuid.toString().equals(uuid.toString())) {
-				throw new FailedAddingException("You can't add yourself to a party!");
+				throw new FailedAddingException(langUtils.getString("Exceptions.Your-Self-Invite"));
 			}
 
 			List<String> list = this.getParties();
 			if(list.contains(uuid.toString())) {
-				throw new AlreadyJoinedException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &cis already in your party!");
+				throw new AlreadyJoinedException(langUtils.getString("Exceptions.Already.In").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 			list.add(uuid.toString());
 			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Party-List", list);
@@ -194,18 +195,18 @@ public class PartyManager {
 			return this;
 		}
 
-		public PartyUtils remove(ProxiedPlayer player) throws NotJoinedException {
-			return this.remove(player.getUniqueId());
+		public PartyUtils remove(ProxiedPlayer player, LanguageUtils langUtils) throws NotJoinedException {
+			return this.remove(player.getUniqueId(), langUtils);
 		}
 
-		public PartyUtils remove(UUID uuid) throws NotJoinedException {
+		public PartyUtils remove(UUID uuid, LanguageUtils langUtils) throws NotJoinedException {
 			if(this.uuid.toString().equals(uuid.toString())) {
 				throw new NotJoinedException("&cYou can't remove yourself! Use /party disaband instead!");
 			}
 
 			List<String> list = this.getParties();
 			if(!list.contains(uuid.toString())) {
-				throw new NotJoinedException(PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName() + " &cisn't in your party! Invite them first!");
+				throw new NotJoinedException(langUtils.getString("Exceptions.Isnt-In-Your-Party").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 			list.remove(uuid.toString());
 			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Party-List", list);

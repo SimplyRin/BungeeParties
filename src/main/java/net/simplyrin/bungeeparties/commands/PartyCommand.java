@@ -1,5 +1,6 @@
 package net.simplyrin.bungeeparties.commands;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -10,13 +11,16 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.config.Configuration;
 import net.simplyrin.bungeefriends.utils.MessageBuilder;
 import net.simplyrin.bungeeparties.Main;
 import net.simplyrin.bungeeparties.exceptions.NotInvitedException;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
 import net.simplyrin.bungeeparties.messages.Messages;
 import net.simplyrin.bungeeparties.messages.Permissions;
+import net.simplyrin.bungeeparties.utils.LanguageManager.LanguageUtils;
 import net.simplyrin.bungeeparties.utils.PartyManager.PartyUtils;
+import net.simplyrin.config.Config;
 import net.simplyrin.threadpool.ThreadPool;
 
 /**
@@ -55,20 +59,21 @@ public class PartyCommand extends Command {
 
 		ProxiedPlayer player = (ProxiedPlayer) sender;
 		PartyUtils myParties = this.plugin.getPartyManager().getPlayer(player);
+		LanguageUtils langUtils = this.plugin.getLanguageManager().getPlayer(player);
 
 		if(!player.hasPermission(Permissions.MAIN)) {
-			this.plugin.info(player, Messages.NO_PERMISSION);
+			this.plugin.info(player, langUtils.getString(Messages.NO_PERMISSION));
 			return;
 		}
 
 		if(args.length > 0) {
 			if(args[0].equalsIgnoreCase("invite")) {
 				if(args.length > 1) {
-					this.invite(player, myParties, args[1]);
+					this.invite(player, myParties, args[1], langUtils);
 					return;
 				}
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&cInvalid usage! '/party invite <player>'");
+				this.plugin.info(player, langUtils.getString("Invite.Usage"));
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
@@ -76,26 +81,29 @@ public class PartyCommand extends Command {
 			if(args[0].equalsIgnoreCase("leave")) {
 				if(this.plugin.getConfigManager().getConfig().getString("Player." + myParties.getPlayer().getUniqueId() + ".Currently-Joined-Party").equals("NONE")) {
 					this.plugin.info(player, Messages.HYPHEN);
-					this.plugin.info(player, "&cYou must be in a party to use this command!");
+					this.plugin.info(player, langUtils.getString("No-Joined-The-Party"));
 					this.plugin.info(player, Messages.HYPHEN);
 					return;
 				}
 
-				PartyUtils partyLeader = myParties.leaveCurrentParty();
+				PartyUtils partyLeader = myParties.leaveCurrentParty(langUtils);
 
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&aYou left the party");
+				this.plugin.info(player, langUtils.getString("Leave.You-Left"));
 				this.plugin.info(player, Messages.HYPHEN);
 
 				if(myParties.getParties().size() > 0) {
+					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyLeader.getPlayer());
 					this.plugin.info(partyLeader.getPlayer(), Messages.HYPHEN);
-					this.plugin.info(partyLeader.getPlayer(), myParties.getDisplayName() + "&e left the party.");
+					this.plugin.info(partyLeader.getPlayer(), langUtils.getString("Leave.Player-Left").replace("%displayName", myParties.getDisplayName()));
 					this.plugin.info(partyLeader.getPlayer(), Messages.HYPHEN);
 
 					for(String partyPlayerUniqueId : myParties.getParties()) {
 						ProxiedPlayer partyPlayer = this.plugin.getProxy().getPlayer(partyPlayerUniqueId);
+						targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyPlayer);
+
 						this.plugin.info(partyPlayer, Messages.HYPHEN);
-						this.plugin.info(partyPlayer, myParties.getDisplayName() + "&e left the party.");
+						this.plugin.info(partyPlayer, targetLangUtils.getString("Leave.Player-Left").replace("%displayName", myParties.getDisplayName()));
 						this.plugin.info(partyPlayer, Messages.HYPHEN);
 					}
 				}
@@ -105,14 +113,14 @@ public class PartyCommand extends Command {
 			if(args[0].equalsIgnoreCase("list")) {
 				if(this.plugin.getConfigManager().getConfig().getString("Player." + myParties.getPlayer().getUniqueId() + ".Currently-Joined-Party").equals("NONE")) {
 					this.plugin.info(player, Messages.HYPHEN);
-					this.plugin.info(player, "&cYou must be in a party to use this command!");
+					this.plugin.info(player, langUtils.getString("No-Joined-The-Party"));
 					this.plugin.info(player, Messages.HYPHEN);
 					return;
 				}
 
 				PartyUtils partyLeader;
 				try {
-					partyLeader = myParties.getPartyLeader();
+					partyLeader = myParties.getPartyLeader(langUtils);
 				} catch (NotJoinedException e) {
 					return;
 				}
@@ -128,7 +136,7 @@ public class PartyCommand extends Command {
 				}
 
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&aParty members (" + (parties.size() + 1) + "): " + raw);
+				this.plugin.info(player, langUtils.getString("List.Party-List").replace("%size", String.valueOf(parties.size() + 1)) + " " + raw);
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
@@ -137,7 +145,7 @@ public class PartyCommand extends Command {
 				if(args.length > 1) {
 					if(this.plugin.getConfigManager().getConfig().getString("Player." + myParties.getPlayer().getUniqueId() + ".Currently-Joined-Party").equals("NONE")) {
 						this.plugin.info(player, Messages.HYPHEN);
-						this.plugin.info(player, "&cYou must be in a party to use this command!");
+						this.plugin.info(player, langUtils.getString("No-Joined-The-Party"));
 						this.plugin.info(player, Messages.HYPHEN);
 						return;
 					}
@@ -145,14 +153,14 @@ public class PartyCommand extends Command {
 					UUID target = this.plugin.getPlayerManager().getPlayerUniqueId(args[1]);
 					if(target == null) {
 						this.plugin.info(player, Messages.HYPHEN);
-						this.plugin.info(player, "&cCan't find a player by the name of '" + args[1] + "'");
+						this.plugin.info(player, langUtils.getString("Cant-Find").replace("%name", args[1]));
 						this.plugin.info(player, Messages.HYPHEN);
 						return;
 					}
 					PartyUtils targetParties = this.plugin.getPartyManager().getPlayer(target);
 
 					try {
-						myParties.remove(target);
+						myParties.remove(target, langUtils);
 					} catch (NotJoinedException e) {
 						this.plugin.info(player, Messages.HYPHEN);
 						this.plugin.info(player, e.getMessage());
@@ -168,18 +176,18 @@ public class PartyCommand extends Command {
 						for(String partyPlayerUniqueId : myParties.getParties()) {
 							ProxiedPlayer partyPlayer = this.plugin.getProxy().getPlayer(partyPlayerUniqueId);
 							this.plugin.info(partyPlayer, Messages.HYPHEN);
-							this.plugin.info(partyPlayer, targetParties.getDisplayName() + " &ahas been removed from your party!");
+							this.plugin.info(partyPlayer, langUtils.getString("Remove.Member-Removed").replace("%targetDisplayName", targetParties.getDisplayName()));
 							this.plugin.info(partyPlayer, Messages.HYPHEN);
 						}
 					}
 
 					this.plugin.info(target, Messages.HYPHEN);
-					this.plugin.info(target, "&eYou have been kicked from the party by " + myParties.getDisplayName() + "&e!");
+					this.plugin.info(target, langUtils.getString("Remove.Me-Removed").replace("%displayName", myParties.getDisplayName()));
 					this.plugin.info(target, Messages.HYPHEN);
 					return;
 				}
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&cInvalid usage! '/party remove <player>'");
+				this.plugin.info(player, langUtils.getString("Remove.Usage"));
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
@@ -187,13 +195,13 @@ public class PartyCommand extends Command {
 			if(args[0].equalsIgnoreCase("warp")) {
 				if(this.plugin.getConfigManager().getConfig().getString("Player." + myParties.getPlayer().getUniqueId() + ".Currently-Joined-Party").equals("NONE")) {
 					this.plugin.info(player, Messages.HYPHEN);
-					this.plugin.info(player, "&cYou must be in a party to use this command!");
+					this.plugin.info(player, langUtils.getString("No-Joined-The-Party"));
 					this.plugin.info(player, Messages.HYPHEN);
 					return;
 				}
 
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&eThe party leader " + myParties.getDisplayName() + " &esummoned you to their server.");
+				this.plugin.info(player, langUtils.getString("Warp.Summon").replace("%displayName", myParties.getDisplayName()));
 				this.plugin.info(player, Messages.HYPHEN);
 
 				for(String partyPlayerUniqueId : myParties.getParties()) {
@@ -202,8 +210,9 @@ public class PartyCommand extends Command {
 						targetPlayer.connect(myParties.getPlayer().getServer().getInfo());
 					}
 
+					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetPlayer);
 					this.plugin.info(targetPlayer, Messages.HYPHEN);
-					this.plugin.info(targetPlayer, "&eThe party leader " + myParties.getDisplayName() + " &esummoned you to their server.");
+					this.plugin.info(targetPlayer, targetLangUtils.getString("Warp.Summon").replace("%displayName", myParties.getDisplayName()));
 					this.plugin.info(targetPlayer, Messages.HYPHEN);
 				}
 				return;
@@ -214,14 +223,14 @@ public class PartyCommand extends Command {
 					UUID target = this.plugin.getPlayerManager().getPlayerUniqueId(args[1]);
 					if(target == null) {
 						this.plugin.info(player, Messages.HYPHEN);
-						this.plugin.info(player, "&cCan't find a player by the name of '" + args[1] + "'");
+						this.plugin.info(player, langUtils.getString("Cant-Find").replace("%name", args[1]));
 						this.plugin.info(player, Messages.HYPHEN);
 						return;
 					}
 					PartyUtils targetParties = this.plugin.getPartyManager().getPlayer(target);
 
 					try {
-						targetParties.removeRequest(player);
+						targetParties.removeRequest(player, langUtils);
 					} catch (NotInvitedException e) {
 						this.plugin.info(player, Messages.HYPHEN);
 						this.plugin.info(player, e.getMessage());
@@ -230,23 +239,25 @@ public class PartyCommand extends Command {
 					}
 
 					this.plugin.info(player, Messages.HYPHEN);
-					this.plugin.info(player, "&aYou joined " + targetParties.getDisplayName() + "&a's party!");
+					this.plugin.info(player, langUtils.getString("Accept.You-Joined").replace("%targetDisplayName", targetParties.getDisplayName()));
 					this.plugin.info(player, Messages.HYPHEN);
 
+					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetParties.getPlayer());
 					this.plugin.info(targetParties.getPlayer(), Messages.HYPHEN);
-					this.plugin.info(targetParties.getPlayer(), myParties.getDisplayName() + "&a joined the party!");
+					this.plugin.info(targetParties.getPlayer(), targetLangUtils.getString("Accept.Joined").replace("%displayName", myParties.getDisplayName()));
 					this.plugin.info(targetParties.getPlayer(), Messages.HYPHEN);
 
 					for(String partyPlayerUniqueId : targetParties.getParties()) {
 						PartyUtils targetPlayer = this.plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
+						targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetPlayer.getPlayer());
 
 						this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
-						this.plugin.info(targetPlayer.getPlayer(), "&a" + myParties.getDisplayName() + " &ajoined the party!");
+						this.plugin.info(targetPlayer.getPlayer(), targetLangUtils.getString("Accept.Joined").replace("%displayName", myParties.getDisplayName()));
 						this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
 					}
 
 					try {
-						targetParties.add(player);
+						targetParties.add(player, langUtils);
 					} catch (Exception e) {
 						this.plugin.info(player, Messages.HYPHEN);
 						this.plugin.info(player, "&c" + e.getMessage());
@@ -255,7 +266,7 @@ public class PartyCommand extends Command {
 					return;
 				}
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&cInvalid usage! '/party accept <player>'");
+				this.plugin.info(player, langUtils.getString("Accept.Usage"));
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
@@ -265,22 +276,22 @@ public class PartyCommand extends Command {
 				if(bool) {
 					myParties.setEnabledReceiveRequest(false);
 					this.plugin.info(player, Messages.HYPHEN);
-					this.plugin.info(player, "&eParty invitation acceptance has been &cDisabled&e.");
+					this.plugin.info(player, langUtils.getString("Toggle.Disabled"));
 					this.plugin.info(player, Messages.HYPHEN);
 					return;
 				}
 				myParties.setEnabledReceiveRequest(true);
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&eParty invitation acceptance has been &aEnabled&e.");
+				this.plugin.info(player, langUtils.getString("Toggle.Enabled"));
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
 
 			if(args[0].equalsIgnoreCase("disband")) {
 				try {
-					if(!myParties.isPartyOwner()) {
+					if(!myParties.isPartyOwner(langUtils)) {
 						this.plugin.info(player, Messages.HYPHEN);
-						this.plugin.info(player, "&cYou must be the Party Leader to use that command!");
+						this.plugin.info(player, langUtils.getString("Disband.Must-Leader"));
 						this.plugin.info(player, Messages.HYPHEN);
 						return;
 					}
@@ -292,14 +303,15 @@ public class PartyCommand extends Command {
 				}
 
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, myParties.getDisplayName() + "&e has disbanded the party!");
+				this.plugin.info(player, langUtils.getString("Disband.Disbanded").replace("%displayName", myParties.getDisplayName()));
 				this.plugin.info(player, Messages.HYPHEN);
 
 				for(String partyPlayerUniqueId : myParties.getParties()) {
 					PartyUtils targetPlayer = this.plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
+					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetPlayer.getPlayer());
 
 					this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
-					this.plugin.info(targetPlayer.getPlayer(), myParties.getDisplayName() + "&e has disbanded the party!");
+					this.plugin.info(targetPlayer.getPlayer(), targetLangUtils.getString("Disband.Disbanded").replace("%displayName", myParties.getDisplayName()));
 					this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
 
 					this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Currently-Joined-Party", "NONE");
@@ -314,7 +326,7 @@ public class PartyCommand extends Command {
 			}
 
 			if(args[0].equalsIgnoreCase("help")) {
-				this.printHelp(player);
+				this.printHelp(player, langUtils);
 				return;
 			}
 
@@ -327,60 +339,103 @@ public class PartyCommand extends Command {
 
 					PartyUtils partyLeader;
 					try {
-						partyLeader = myParties.getPartyLeader();
+						partyLeader = myParties.getPartyLeader(langUtils);
 					} catch (NotJoinedException e) {
 						return;
 					}
 
 					List<String> parties = partyLeader.getParties();
 
-					this.plugin.info(partyLeader.getPlayer(), "&9Party > " + myParties.getDisplayName() + "&f: " + message);
+					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyLeader.getPlayer());
+					this.plugin.info(partyLeader.getPlayer(), targetLangUtils.getString("Chat.Prefix") + " " + myParties.getDisplayName() + "&f: " + message);
 					for(String partyPlayerUniqueId : parties) {
 						PartyUtils member = this.plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
-						this.plugin.info(member.getPlayer(), "&9Party > " + myParties.getDisplayName() + "&f: " + message);
+						targetLangUtils = this.plugin.getLanguageManager().getPlayer(member.getPlayer());
+						this.plugin.info(member.getPlayer(), targetLangUtils.getString("Chat.Prefix") + " " + myParties.getDisplayName() + "&f: " + message);
 					}
 					return;
 				}
 				this.plugin.info(player, Messages.HYPHEN);
-				this.plugin.info(player, "&cInvalid usage! '/party chat <message>'");
+				this.plugin.info(player, langUtils.getString("Chat.Usage"));
 				this.plugin.info(player, Messages.HYPHEN);
 				return;
 			}
 
-			this.invite(player, myParties, args[0]);
+			if(args[0].equalsIgnoreCase("lang") || args[0].equalsIgnoreCase("language")) {
+				File folder = this.plugin.getDataFolder();
+				if(!folder.exists()) {
+					folder.mkdir();
+				}
+
+				File languageFolder = new File(folder, "Language");
+				if(!languageFolder.exists()) {
+					languageFolder.mkdir();
+				}
+
+				List<String> availableList = new ArrayList<>();
+				String available = "";
+				File[] languages = languageFolder.listFiles();
+				for(File languageFile : languages) {
+					Configuration langConfig = Config.getConfig(languageFile);
+					if(langConfig.getString("Language").length() > 1) {
+						availableList.add(languageFile.getName().toLowerCase().replace(".yml", ""));
+						available += langConfig.getString("Language") + ",";
+					}
+				}
+
+				if(args.length > 1) {
+					String lang = args[1];
+					if(availableList.contains(lang.toLowerCase())) {
+						langUtils.setLanguage(lang.toLowerCase());
+						this.plugin.info(player, Messages.HYPHEN);
+						this.plugin.info(player, langUtils.getString("Lang.Update").replace("%lang", langUtils.getLanguage()));
+						this.plugin.info(player, Messages.HYPHEN);
+						return;
+					}
+				}
+
+				this.plugin.info(player, Messages.HYPHEN);
+				this.plugin.info(player, langUtils.getString("Lang.Usage"));
+				this.plugin.info(player, langUtils.getString("Lang.Available") + " <" + available.substring(0, available.length() - 1) + ">");
+				this.plugin.info(player, Messages.HYPHEN);
+				return;
+			}
+
+			this.invite(player, myParties, args[0], langUtils);
 			return;
 		}
-		this.printHelp(player);
+		this.printHelp(player, langUtils);
 	}
 
-	private void printHelp(ProxiedPlayer player) {
+	private void printHelp(ProxiedPlayer player, LanguageUtils langUtils) {
 		this.plugin.info(player, Messages.HYPHEN);
-		this.plugin.info(player, "&aParty Commands:");
-		this.plugin.info(player, "&e/party help &7- &bPrints this help message");
-		this.plugin.info(player, "&e/party chat &7- &bSend the message to the party member");
-		this.plugin.info(player, "&e/party invite &7- &bInvites the player to your party");
-		this.plugin.info(player, "&e/party leave &7- &bLeaves the current party");
-		this.plugin.info(player, "&e/party list &7- &bLists the members of your party");
-		this.plugin.info(player, "&e/party remove &7- &bRemove the player from the party");
-		this.plugin.info(player, "&e/party warp &7- &bTeleport the members of your party to your server");
-		this.plugin.info(player, "&e/party accept &7- &bAccept a party invite from the player");
-		this.plugin.info(player, "&e/party toggle &7- &bToggle acceptance of invitation.");
-		this.plugin.info(player, "&e/party disband &7- &bDisbands the party");
+		this.plugin.info(player, langUtils.getString("Help.Command"));
+		this.plugin.info(player, langUtils.getString("Help.Help"));
+		this.plugin.info(player, langUtils.getString("Help.Chat"));
+		this.plugin.info(player, langUtils.getString("Help.Invite"));
+		this.plugin.info(player, langUtils.getString("Help.Leave"));
+		this.plugin.info(player, langUtils.getString("Help.List"));
+		this.plugin.info(player, langUtils.getString("Help.Remove"));
+		this.plugin.info(player, langUtils.getString("Help.Warp"));
+		this.plugin.info(player, langUtils.getString("Help.Accept"));
+		this.plugin.info(player, langUtils.getString("Help.Toggle"));
+		this.plugin.info(player, langUtils.getString("Help.Lang"));
+		this.plugin.info(player, langUtils.getString("Help.Disband"));
 		this.plugin.info(player, Messages.HYPHEN);
 	}
 
-	private void invite(ProxiedPlayer player, PartyUtils myParties, String args) {
+	private void invite(ProxiedPlayer player, PartyUtils myParties, String args, LanguageUtils langUtils) {
 		UUID target = this.plugin.getPlayerManager().getPlayerUniqueId(args);
 		if(target == null) {
 			this.plugin.info(player, Messages.HYPHEN);
-			this.plugin.info(player, "&cCan't find a player by the name of '" + args + "'");
+			this.plugin.info(player, langUtils.getString("Cant-Find").replace("%name", args));
 			this.plugin.info(player, Messages.HYPHEN);
 			return;
 		}
 		PartyUtils targetParties = this.plugin.getPartyManager().getPlayer(target);
 
 		try {
-			myParties.addRequest(target);
+			myParties.addRequest(target, langUtils);
 		} catch (Exception e) {
 			this.plugin.info(player, Messages.HYPHEN);
 			this.plugin.info(player, e.getMessage());
@@ -389,25 +444,27 @@ public class PartyCommand extends Command {
 		}
 
 		this.plugin.info(player, Messages.HYPHEN);
-		this.plugin.info(player, myParties.getDisplayName() + " &einvited " + targetParties.getDisplayName() + "&e to the party!");
-		this.plugin.info(player, "&eThey have 60 seconds to accept it!");
+		this.plugin.info(player, langUtils.getString("Invite.Request.Sent.Invited").replace("%displayName", myParties.getDisplayName()).replace("%targetDisplayName", targetParties.getDisplayName()));
+		this.plugin.info(player, langUtils.getString("Invite.Request.Sent.60-Seconds"));
 		this.plugin.info(player, Messages.HYPHEN);
 
 		for(String partyPlayerUniqueId : myParties.getParties()) {
 			ProxiedPlayer partyPlayer = this.plugin.getProxy().getPlayer(UUID.fromString(partyPlayerUniqueId));
+			LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyPlayer);
+
 			this.plugin.info(partyPlayer, Messages.HYPHEN);
-			this.plugin.info(partyPlayer, myParties.getDisplayName() + " &einvited " + targetParties.getDisplayName() + "&e to the party!");
+			this.plugin.info(partyPlayer, targetLangUtils.getString("Invite.Request.Sent.Invited").replace("%displayName", myParties.getDisplayName()).replace("%targetDisplayName", targetParties.getDisplayName()));
 			this.plugin.info(partyPlayer, Messages.HYPHEN);
 		}
 
+		LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(target);
 		TextComponent prefix = MessageBuilder.get(this.plugin.getPrefix());
-		TextComponent invite = MessageBuilder.get("Click here ", "/party accept " + player.getName(), ChatColor.GOLD, "Click to run\n/party accept " + player.getName(), false);
-		TextComponent message = MessageBuilder.get("to join! You have 60 seconds to accept.", "/party accept " + player.getName(), ChatColor.YELLOW, "Click to run\n/party accept " + player.getName(), false);
+		TextComponent invite = MessageBuilder.get(targetLangUtils.getString("Invite.Request.Click-here.Here"), "/party accept " + player.getName(), ChatColor.GOLD, "Click to run\n/party accept " + player.getName(), false);
 
 		this.plugin.info(target, Messages.HYPHEN);
-		this.plugin.info(target, myParties.getDisplayName() + "&e has invited you to join their party!");
+		this.plugin.info(target, targetLangUtils.getString("Invite.Request.Click-here.Receive").replace("%displayName", myParties.getDisplayName()));
 		if(targetParties.getPlayer() != null) {
-			targetParties.getPlayer().sendMessage(prefix, invite, message);
+			targetParties.getPlayer().sendMessage(prefix, invite);
 		}
 		this.plugin.info(target, Messages.HYPHEN);
 
@@ -420,23 +477,24 @@ public class PartyCommand extends Command {
 				}
 
 				try {
-					myParties.removeRequest(target);
+					myParties.removeRequest(target, langUtils);
 				} catch (NotInvitedException e) {
 					return;
 				}
 
 				PartyCommand.this.plugin.info(player, Messages.HYPHEN);
-				PartyCommand.this.plugin.info(player, "&eThe party invite to " + targetParties.getDisplayName() + "&e has expired.");
+				PartyCommand.this.plugin.info(player, langUtils.getString("Invite.Request.Expired.Your-Self").replace("%targetDisplayName", targetParties.getDisplayName()));
 				PartyCommand.this.plugin.info(player, Messages.HYPHEN);
 
 				if(myParties.getParties().size() == 0) {
 					PartyCommand.this.plugin.info(player, Messages.HYPHEN);
-					PartyCommand.this.plugin.info(player, "&eThe party was disbanded because all invites have expired and all members have left.");
+					PartyCommand.this.plugin.info(player, langUtils.getString("Invite.All-Left"));
 					PartyCommand.this.plugin.info(player, Messages.HYPHEN);
 				}
 
+				LanguageUtils targetLangUtils = PartyCommand.this.plugin.getLanguageManager().getPlayer(target);
 				PartyCommand.this.plugin.info(target, Messages.HYPHEN);
-				PartyCommand.this.plugin.info(target, "&eThe party invite from " + myParties.getDisplayName() + "&e has expired.");
+				PartyCommand.this.plugin.info(target, targetLangUtils.getString("Invite.Request.Expired.Target").replace("%displayName", myParties.getDisplayName()));
 				PartyCommand.this.plugin.info(target, Messages.HYPHEN);
 			}
 		});

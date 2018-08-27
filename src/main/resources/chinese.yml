@@ -1,0 +1,92 @@
+#
+# Translator: YuBao
+# Language: Chinese
+#
+Language: Chinese
+
+Ingame_Only: "&c\u6b64\u547d\u4ee4\u4ec5\u5728\u6e38\u620f\u4e2d\u53ef\u7528\u3002"
+No_Permission: "&c\u65e0\u6cd5\u8bbf\u95ee\u6b64\u547d\u4ee4!"
+
+# Exceptions
+Exceptions:
+  Not-Joined: "&c\u4f60\u6ca1\u6709\u52a0\u5165\u7ec4\u961f!"
+  Cant-Invite-Self: "&c\u4f60\u4e0d\u80fd\u9080\u8bf7\u81ea\u5df1\u52a0\u5165\u961f\u4f0d!"
+  Disable-Invite: "%targetDisplayName &c\u5173\u95ed\u4e86\u63a5\u53d7\u9080\u8bf7."
+  Already:
+    In: "%targetDisplayName &c\u5df2\u7ecf\u5728\u4f60\u7684\u961f\u4f0d\u91cc\u4e86!"
+    Joined: "&c\u8fd9\u4e2a\u73a9\u5bb6\u5df2\u7ecf\u52a0\u5165\u4e86\u5176\u4ed6\u961f\u4f0d"
+    Invited: "&c\u4f60\u5df2\u7ecf\u9080\u8bf7\u4e86 %targetDisplayName&c!"
+  Havent-Received-Invite: "&c\u4f60\u6ca1\u6709\u88ab\u9080\u8bf7\u52a0\u5165\u961f\u4f0d\uff0c\u6216\u8005\u9080\u8bf7\u5df2\u7ecf\u8fc7\u671f!"
+  Your-Self-Invite: "&c\u4f60\u4e0d\u80fd\u9080\u8bf7\u4f60\u81ea\u5df1\u52a0\u5165\u961f\u4f0d!"
+  Cant-Remove-Your-Self: "&c\u4f60\u4e0d\u80fd\u8e22\u51fa\u81ea\u5df1! \u901a\u8fc7 /party disaband \u6765\u89e3\u6563\u961f\u4f0d!"
+  Isnt-In-Your-Party: "%targetDisplayName &c\u4e0d\u5728\u4f60\u7684\u961f\u4f0d! \u8bf7\u5148\u9080\u8bf7\u4ed6\u4eec!"
+
+# Commands
+No-Joined-The-Party: "&c\u4f60\u5fc5\u987b\u5728\u4e00\u4e2a\u961f\u4f0d\u91cc\u624d\u80fd\u4f7f\u7528\u8fd9\u4e2a\u547d\u4ee4!"
+Cant-Find: "&c\u65e0\u6cd5\u627e\u5230\u73a9\u5bb6 '%name'"
+
+Invite:
+  Usage: "&c\u65e0\u6548\u6307\u4ee4! '/party invite <\u73a9\u5bb6>'"
+  All-Left: "&e\u8be5\u961f\u4f0d\u88ab\u89e3\u6563\uff0c\u56e0\u4e3a\u6240\u6709\u7684\u9080\u8bf7\u90fd\u5df2\u7ecf\u5230\u671f\uff0c\u6240\u6709\u7684\u6210\u5458\u90fd\u79bb\u5f00\u4e86"
+  Request:
+    Sent: 
+      Invited: "%displayName &e\u9080\u8bf7\u4e86 %targetDisplayName &e\u52a0\u5165\u961f\u4f0d!"
+      60-Seconds: "&e\u4ed6\u4eec\u670960\u79d2\u65f6\u95f4\u540c\u610f\u5b83!"
+    Click-here:
+      Here: "&6\u70b9\u51fb\u8fd9\u91cc &e\u6765\u52a0\u5165! \u4f60\u670960\u79d2\u65f6\u95f4\u6765\u540c\u610f\u5b83."
+      Command: "\u70b9\u51fb\u6267\u884c\n/party accept %name"
+      Receive: "%displayName &e\u9080\u8bf7\u4f60\u52a0\u5165\u4ed6\u4eec\u7684\u961f\u4f0d!"
+    Expired:
+      Your-Self: "&e\u8fd9\u4e2a\u961f\u4f0d\u9080\u8bf7\u81f3 %targetDisplayName &e\u5df2\u7ecf\u8fc7\u671f."
+      Target: "&e\u8fd9\u4e2a\u961f\u4f0d\u9080\u8bf7\u6765\u81ea %displayName &e\u5df2\u7ecf\u8fc7\u671f."
+
+Leave:
+  You-Left: "&a\u4f60\u79bb\u5f00\u4e86\u8fd9\u4e2a\u961f\u4f0d!"
+  Player-Left: "%displayName &e\u79bb\u5f00\u4e86\u961f\u4f0d."
+
+List:
+  Party-List: "&a\u961f\u4f0d\u6210\u5458 (%size):"
+
+Remove: # and Kick
+  Usage: "&c\u65e0\u6548\u6307\u4ee4! '/party remove <\u73a9\u5bb6>'"
+  Member-Removed: "%targetDisplayName &a\u5df2\u7ecf\u4ece\u4f60\u7684\u961f\u4f0d\u4e2d\u8e22\u51fa!"
+  Me-Removed: "&e\u4f60\u88ab %displayName&e!\u8e22\u51fa\u4e86\u961f\u4f0d"
+
+Warp:
+  Summon: "&e\u961f\u957f %displayName &e\u4f20\u9001\u4f60\u5230\u4ed6\u7684\u670d\u52a1\u5668."
+
+Accept:
+  Usage: "&c\u65e0\u6548\u6307\u4ee4! '/party accept <\u73a9\u5bb6>'"
+  You-Joined: "&a\u4f60\u52a0\u5165\u4e86 %targetDisplayName&a\u7684\u961f\u4f0d!"
+  Joined: "%displayName &a\u52a0\u5165\u4e86\u961f\u4f0d!"
+
+Toggle:
+  Disabled: "&e\u63a5\u53d7\u961f\u4f0d\u9080\u8bf7\u5df2\u7ecf &c\u5173\u95ed&e."
+  Enabled: "&e\u63a5\u53d7\u961f\u4f0d\u9080\u8bf7\u5df2\u7ecf &a\u5f00\u542f&e."
+
+Disband:
+  Must-Leader: "&c\u4f60\u5fc5\u987b\u662f\u961f\u957f\u624d\u80fd\u4f7f\u7528\u8fd9\u4e2a\u547d\u4ee4!"
+  Disbanded: "%displayName &e\u89e3\u6563\u4e86\u961f\u4f0d!"
+
+Chat:
+  Usage: "&c\u65e0\u6548\u6307\u4ee4! '/party chat <\u6d88\u606f>'"
+  Prefix: "&9\u7ec4\u961f >"
+
+Lang:
+  Usage: "&c\u65e0\u6548\u6307\u4ee4! '/party lang <\u8bed\u8a00>'"
+  Available: "&b\u5f53\u524d\u53ef\u7528\u8bed\u8a00:"
+  Update: "&a\u5df2\u9009\u62e9\u8bed\u8a00: &e%lang&a!"
+
+Help:
+  Command: "&a\u7ec4\u961f\u547d\u4ee4:"
+  Help: "&e/party help &7- &b\u663e\u793a\u6b64\u7ec4\u961f\u5e2e\u52a9"
+  Lang: "&e/party lang &7- &b\u66f4\u6539\u663e\u793a\u8bed\u8a00"
+  Chat: "&e/party chat &7- &b\u53d1\u9001\u7ec4\u961f\u4fe1\u606f"
+  Invite: "&e/party invite &7- &b\u9080\u8bf7\u73a9\u5bb6\u52a0\u5165\u4f60\u7684\u961f\u4f0d"
+  Leave: "&e/party leave &7- &b\u79bb\u5f00\u5f53\u524d\u961f\u4f0d"
+  List: "&e/party list &7- &b\u5217\u51fa\u961f\u4f0d\u6210\u5458"
+  Remove: "&e/party remove &7- &b\u4ece\u4f60\u7684\u961f\u4f0d\u4e2d\u8e22\u51fa\u4e00\u4f4d\u6210\u5458"
+  Warp: "&e/party warp &7- &b\u4f20\u9001\u961f\u4f0d\u6210\u5458\u5230\u4f60\u6240\u5728\u7684\u670d\u52a1\u5668"
+  Accept: "&e/party accept &7- &b\u540c\u610f\u4e00\u4e2a\u6765\u81ea\u73a9\u5bb6\u7684\u7ec4\u961f\u9080\u8bf7"
+  Toggle: "&e/party toggle &7- &b\u66f4\u6539\u63a5\u53d7\u7ec4\u961f\u9080\u8bf7\u72b6\u6001"
+  Disband: "&e/party disband &7- &b\u89e3\u6563\u8fd9\u4e2a\u961f\u4f0d"

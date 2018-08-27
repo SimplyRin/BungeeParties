@@ -10,6 +10,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.simplyrin.bungeeparties.commands.PartyCommand;
 import net.simplyrin.bungeeparties.listeners.EventListener;
 import net.simplyrin.bungeeparties.utils.ConfigManager;
+import net.simplyrin.bungeeparties.utils.LanguageManager;
 import net.simplyrin.bungeeparties.utils.MessageBuilder;
 import net.simplyrin.bungeeparties.utils.NameManager;
 import net.simplyrin.bungeeparties.utils.PartyManager;
@@ -48,6 +49,9 @@ public class Main extends Plugin {
 	@Getter
 	private NameManager nameManager;
 
+	@Getter
+	private LanguageManager languageManager;
+
 	@Override
 	public void onEnable() {
 		plugin = this;
@@ -57,6 +61,8 @@ public class Main extends Plugin {
 
 		plugin.partyManager = new PartyManager(plugin);
 		plugin.nameManager = new NameManager(plugin);
+
+		plugin.languageManager = new LanguageManager(plugin);
 
 		plugin.getProxy().getPluginManager().registerCommand(plugin, new PartyCommand(plugin));
 		plugin.getProxy().getPluginManager().registerListener(plugin, new EventListener(plugin));
