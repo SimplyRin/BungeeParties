@@ -64,6 +64,7 @@ public class PartyManager {
 				PartyManager.this.plugin.info("Creating data for player " + player.getName() + "...");
 
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Name", player.getName());
+				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Language", "english");
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Currently-Joined-Party", "NONE");
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Party-List", new ArrayList<>());
 				PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Requests", new ArrayList<>());
@@ -149,7 +150,7 @@ public class PartyManager {
 
 			List<String> requests = PartyManager.this.plugin.getConfigManager().getConfig().getStringList("Player." + this.uuid.toString() + ".Requests");
 			if(requests.contains(uuid.toString())) {
-				throw new FailedInvitingException(langUtils.getString("Exceptions.Already.Joined").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
+				throw new FailedInvitingException(langUtils.getString("Exceptions.Already.Invited").replace("%targetDisplayName", PartyManager.this.plugin.getNameManager().getPlayer(uuid).getDisplayName()));
 			}
 			requests.add(uuid.toString());
 			PartyManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Requests", requests);

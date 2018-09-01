@@ -82,7 +82,8 @@ public class LanguageManager {
 		public LanguageUtils(UUID uuid) {
 			this.uuid = uuid;
 
-			if(LanguageManager.this.plugin.getConfigManager().getConfig().get("Player." + this.uuid.toString() + ".Language") == null) {
+			Object lang = LanguageManager.this.plugin.getConfigManager().getConfig().get("Player." + this.uuid.toString() + ".Language");
+			if(lang == null || lang.equals("")) {
 				LanguageManager.this.plugin.getConfigManager().getConfig().set("Player." + this.uuid.toString() + ".Language", "english");
 				LanguageManager.this.configMap.put("english", Config.getConfig(this.getFile("english")));
 			}
@@ -90,6 +91,9 @@ public class LanguageManager {
 
 		public String getLanguage() {
 			String key = LanguageManager.this.plugin.getConfigManager().getConfig().getString("Player." + this.uuid.toString() + ".Language");
+			if(key == null || key.equals("")) {
+				return "english";
+			}
 			return key.substring(0, 1).toUpperCase() + key.substring(1, key.length());
 		}
 
@@ -128,7 +132,7 @@ public class LanguageManager {
 		}
 
 		public File getFile(String key) {
-			return new File(this.getLanguagesFolder(), key + ".yml");
+			return new File(this.getLanguagesFolder(), key.toLowerCase() + ".yml");
 		}
 
 	}

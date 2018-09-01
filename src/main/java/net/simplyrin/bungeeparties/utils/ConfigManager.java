@@ -68,12 +68,14 @@ public class ConfigManager {
 			this.config.set("Plugin.Bypass-Lobby-Name-Contains", "lobby");
 
 			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Name", "SimplyRin");
+			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Language", "english");
 			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Currently-Joined-Party", "NONE");
 			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Party-List", new ArrayList<>());
 			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Requests", new ArrayList<>());
 			this.config.set("Player.b0bb65a2-832f-4a5d-854e-873b7c4522ed.Toggle", true);
 
 			this.config.set("Player.64636120-8633-4541-aa5f-412b42ddb04d.Name", "SimplyFoxy");
+			this.config.set("Player.64636120-8633-4541-aa5f-412b42ddb04d.Language", "english");
 			this.config.set("Player.64636120-8633-4541-aa5f-412b42ddb04d.Currently-Joined-Party", "NONE");
 			this.config.set("Player.64636120-8633-4541-aa5f-412b42ddb04d.Party-List", new ArrayList<>());
 			this.config.set("Player.64636120-8633-4541-aa5f-412b42ddb04d.Requests", new ArrayList<>());
