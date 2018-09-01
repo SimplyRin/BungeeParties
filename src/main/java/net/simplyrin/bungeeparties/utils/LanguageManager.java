@@ -105,7 +105,7 @@ public class LanguageManager {
 			Configuration config = LanguageManager.this.configMap.get(this.getLanguage());
 
 			if(config == null) {
-				File file = new File(this.getLanguagesFolder(), this.getLanguage() + ".yml");
+				File file = new File(this.getLanguagesFolder(), this.getLanguage().toLowerCase() + ".yml");
 				LanguageManager.this.configMap.put(this.getLanguage(), Config.getConfig(file));
 			}
 
