@@ -61,6 +61,9 @@ public class PartyCommand extends Command {
 		PartyUtils myParties = this.plugin.getPartyManager().getPlayer(player);
 		LanguageUtils langUtils = this.plugin.getLanguageManager().getPlayer(player);
 
+		this.plugin.getPlayerManager().getConfig().set("Name." + player.getName().toLowerCase(), player.getUniqueId().toString());
+		this.plugin.getPlayerManager().getConfig().set("UUID." + player.getUniqueId().toString(), player.getName().toLowerCase());
+
 		if(!player.hasPermission(Permissions.MAIN)) {
 			this.plugin.info(player, langUtils.getString(Messages.NO_PERMISSION));
 			return;
@@ -100,11 +103,13 @@ public class PartyCommand extends Command {
 
 					for(String partyPlayerUniqueId : myParties.getParties()) {
 						ProxiedPlayer partyPlayer = this.plugin.getProxy().getPlayer(partyPlayerUniqueId);
-						targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyPlayer);
+						if (partyPlayer != null) {
+							targetLangUtils = this.plugin.getLanguageManager().getPlayer(partyPlayer);
 
-						this.plugin.info(partyPlayer, Messages.HYPHEN);
-						this.plugin.info(partyPlayer, targetLangUtils.getString("Leave.Player-Left").replace("%displayName", myParties.getDisplayName()));
-						this.plugin.info(partyPlayer, Messages.HYPHEN);
+							this.plugin.info(partyPlayer, Messages.HYPHEN);
+							this.plugin.info(partyPlayer, targetLangUtils.getString("Leave.Player-Left").replace("%displayName", myParties.getDisplayName()));
+							this.plugin.info(partyPlayer, Messages.HYPHEN);
+						}
 					}
 				}
 				return;
@@ -308,15 +313,17 @@ public class PartyCommand extends Command {
 
 				for(String partyPlayerUniqueId : myParties.getParties()) {
 					PartyUtils targetPlayer = this.plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
-					LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetPlayer.getPlayer());
+					if (targetPlayer != null) {
+						LanguageUtils targetLangUtils = this.plugin.getLanguageManager().getPlayer(targetPlayer.getPlayer());
 
-					this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
-					this.plugin.info(targetPlayer.getPlayer(), targetLangUtils.getString("Disband.Disbanded").replace("%displayName", myParties.getDisplayName()));
-					this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
+						this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
+						this.plugin.info(targetPlayer.getPlayer(), targetLangUtils.getString("Disband.Disbanded").replace("%displayName", myParties.getDisplayName()));
+						this.plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
 
-					this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Currently-Joined-Party", "NONE");
-					this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Party-List", new ArrayList<>());
-					this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Requests", new ArrayList<>());
+						this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Currently-Joined-Party", "NONE");
+						this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Party-List", new ArrayList<>());
+						this.plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Requests", new ArrayList<>());
+					}
 				}
 
 				this.plugin.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Currently-Joined-Party", "NONE");
