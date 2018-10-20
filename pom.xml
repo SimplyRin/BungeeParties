@@ -4,7 +4,7 @@
 
   <groupId>net.simplyrin.bungeeparties</groupId>
   <artifactId>BungeeParties</artifactId>
-  <version>1.3.3-SNAPSHOT</version>
+  <version>1.3.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>BungeeParties</name>
@@ -76,11 +76,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>net.simplyrin.config</groupId>
-      <artifactId>Config</artifactId>
-      <version>1.0</version>
-    </dependency>
     <dependency>
       <groupId>net.simplyrin.threadpool</groupId>
       <artifactId>ThreadPool</artifactId>

@@ -85,7 +85,16 @@ public class ConfigManager {
 		}
 
 		this.config = Config.getConfig(config);
+
+		this.resetValue("Plugin.Disable-Aliases./pc");
+
 		this.saveAndReload();
+	}
+
+	public void resetValue(String key) {
+		if (!this.config.getBoolean(key)) {
+			this.config.set(key, false);
+		}
 	}
 
 }

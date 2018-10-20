@@ -16,6 +16,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.simplyrin.bungeeparties.commands.PartyCommand;
+import net.simplyrin.bungeeparties.commands.alias.PCCommand;
 import net.simplyrin.bungeeparties.exceptions.NotJoinedException;
 import net.simplyrin.bungeeparties.messages.Messages;
 import net.simplyrin.bungeeparties.utils.ConfigManager;
@@ -49,8 +50,6 @@ import net.simplyrin.threadpool.ThreadPool;
  */
 public class Main extends Plugin {
 
-	private static Main plugin;
-
 	@Getter
 	private ConfigManager configManager;
 	@Getter
@@ -66,39 +65,41 @@ public class Main extends Plugin {
 
 	@Override
 	public void onEnable() {
-		plugin = this;
+		this.configManager = new ConfigManager(this);
+		this.playerManager = new PlayerManager(this);
 
-		plugin.configManager = new ConfigManager(plugin);
-		plugin.playerManager = new PlayerManager(plugin);
+		this.partyManager = new PartyManager(this);
+		this.nameManager = new NameManager(this);
 
-		plugin.partyManager = new PartyManager(plugin);
-		plugin.nameManager = new NameManager(plugin);
+		this.languageManager = new LanguageManager(this);
 
-		plugin.languageManager = new LanguageManager(plugin);
+		if (!this.configManager.getConfig().getBoolean("this.Disable-Aliases./pc")) {
+			this.getProxy().getPluginManager().registerCommand(this, new PCCommand(this));
+		}
 
-		plugin.getProxy().getPluginManager().registerCommand(plugin, new PartyCommand(plugin));
-		plugin.getProxy().getPluginManager().registerListener(this, new BPartyListener());
+		this.getProxy().getPluginManager().registerCommand(this, new PartyCommand(this));
+		this.getProxy().getPluginManager().registerListener(this, new BPartyListener());
 	}
 
 	@Override
 	public void onDisable() {
-		plugin.configManager.saveAndReload();
-		plugin.playerManager.saveAndReload();
+		this.configManager.saveAndReload();
+		this.playerManager.saveAndReload();
 	}
 
 	public String getPrefix() {
-		return plugin.getConfigManager().getConfig().getString("Plugin.Prefix");
+		return this.getConfigManager().getConfig().getString("Plugin.Prefix");
 	}
 
 	@SuppressWarnings("deprecation")
 	public void info(String args) {
-		plugin.getProxy().getConsole().sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrefix() + args));
+		this.getProxy().getConsole().sendMessage(ChatColor.translateAlternateColorCodes('&', this.getPrefix() + args));
 	}
 
 	@SuppressWarnings("deprecation")
 	public void info(ProxiedPlayer player, String args) {
 		if(player != null) {
-			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrefix() + args));
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&', this.getPrefix() + args));
 		}
 	}
 
@@ -106,13 +107,13 @@ public class Main extends Plugin {
 	public void info(UUID uuid, String args) {
 		ProxiedPlayer player = this.getProxy().getPlayer(uuid);
 		if(player != null) {
-			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrefix() + args));
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&', this.getPrefix() + args));
 		}
 	}
 
 	public void info(ProxiedPlayer player, TextComponent args) {
 		if(player != null) {
-			player.sendMessage(MessageBuilder.get(plugin.getPrefix()), args);
+			player.sendMessage(MessageBuilder.get(this.getPrefix()), args);
 		}
 	}
 
@@ -128,26 +129,26 @@ public class Main extends Plugin {
 						TimeUnit.SECONDS.sleep(3);
 					} catch (InterruptedException e) {
 					}
-					plugin.info(player, "&aThis server is using &lBungeeParties (" + plugin.getDescription().getVersion() + ")&r&a.");
+					Main.this.info(player, "&aThis server is using &lBungeeParties (" + Main.this.getDescription().getVersion() + ")&r&a.");
 				});
 			}
 
-			plugin.getPartyManager().getPlayer(player);
+			Main.this.getPartyManager().getPlayer(player);
 
-			plugin.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Name", player.getName());
-			plugin.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Currently-Joined-Party", "NONE");
-			plugin.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Party-List", new ArrayList<>());
-			plugin.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Requests", new ArrayList<>());
+			Main.this.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Name", player.getName());
+			Main.this.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Currently-Joined-Party", "NONE");
+			Main.this.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Party-List", new ArrayList<>());
+			Main.this.getConfigManager().getConfig().set("Player." + player.getUniqueId().toString() + ".Requests", new ArrayList<>());
 
-			plugin.getPlayerManager().getConfig().set("Name." + player.getName().toLowerCase(), player.getUniqueId().toString());
-			plugin.getPlayerManager().getConfig().set("UUID." + player.getUniqueId().toString(), player.getName().toLowerCase());
+			Main.this.getPlayerManager().getConfig().set("Name." + player.getName().toLowerCase(), player.getUniqueId().toString());
+			Main.this.getPlayerManager().getConfig().set("UUID." + player.getUniqueId().toString(), player.getName().toLowerCase());
 		}
 
 		@EventHandler
 		public void onDisconnect(PlayerDisconnectEvent event) {
 			ProxiedPlayer player = event.getPlayer();
-			PartyUtils myParties = plugin.getPartyManager().getPlayer(player);
-			LanguageUtils langUtils = plugin.getLanguageManager().getPlayer(player);
+			PartyUtils myParties = Main.this.getPartyManager().getPlayer(player);
+			LanguageUtils langUtils = Main.this.getLanguageManager().getPlayer(player);
 
 			if(myParties.getParties().size() == 0) {
 				return;
@@ -162,27 +163,27 @@ public class Main extends Plugin {
 			}
 
 			for(String partyPlayerUniqueId : myParties.getParties()) {
-				PartyUtils targetPlayer = plugin.getPartyManager().getPlayer(partyPlayerUniqueId);
+				PartyUtils targetPlayer = Main.this.getPartyManager().getPlayer(partyPlayerUniqueId);
 
-				plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
-				plugin.info(targetPlayer.getPlayer(), myParties.getDisplayName() + "&e has disbanded the party!");
-				plugin.info(targetPlayer.getPlayer(), Messages.HYPHEN);
+				Main.this.info(targetPlayer.getPlayer(), Messages.HYPHEN);
+				Main.this.info(targetPlayer.getPlayer(), myParties.getDisplayName() + "&e has disbanded the party!");
+				Main.this.info(targetPlayer.getPlayer(), Messages.HYPHEN);
 
-				plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Currently-Joined-Party", "NONE");
-				plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Party-List", new ArrayList<>());
-				plugin.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Requests", new ArrayList<>());
+				Main.this.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Currently-Joined-Party", "NONE");
+				Main.this.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Party-List", new ArrayList<>());
+				Main.this.getConfigManager().getConfig().set("Player." + targetPlayer.getUniqueId() + ".Requests", new ArrayList<>());
 			}
 
-			plugin.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Currently-Joined-Party", "NONE");
-			plugin.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Party-List", new ArrayList<>());
-			plugin.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Requests", new ArrayList<>());
+			Main.this.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Currently-Joined-Party", "NONE");
+			Main.this.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Party-List", new ArrayList<>());
+			Main.this.getConfigManager().getConfig().set("Player." + myParties.getUniqueId() + ".Requests", new ArrayList<>());
 		}
 
 		@EventHandler
 		public void onSwitch(ServerSwitchEvent event) {
 			ProxiedPlayer player = event.getPlayer();
-			PartyUtils partyUtils = plugin.getPartyManager().getPlayer(player);
-			LanguageUtils langUtils = plugin.getLanguageManager().getPlayer(player);
+			PartyUtils partyUtils = Main.this.getPartyManager().getPlayer(player);
+			LanguageUtils langUtils = Main.this.getLanguageManager().getPlayer(player);
 
 			try {
 				if(!partyUtils.isPartyOwner(langUtils)) {
@@ -193,15 +194,15 @@ public class Main extends Plugin {
 			}
 
 			String serverName = player.getServer().getInfo().getName().toLowerCase();
-			if(serverName.contains(plugin.getConfigManager().getConfig().getString("Plugin.Bypass-Lobby-Name-Contains").toLowerCase())) {
+			if(serverName.contains(Main.this.getConfigManager().getConfig().getString("Plugin.Bypass-Lobby-Name-Contains").toLowerCase())) {
 				return;
 			}
 
 			List<String> parties = partyUtils.getParties();
 			for(String partyPlayerUniqueId : parties) {
-				ProxiedPlayer targetPlayer = plugin.getProxy().getPlayer(UUID.fromString(partyPlayerUniqueId));
+				ProxiedPlayer targetPlayer = Main.this.getProxy().getPlayer(UUID.fromString(partyPlayerUniqueId));
 				if(targetPlayer != null) {
-					plugin.info(targetPlayer, "&aSending you to " + player.getServer().getInfo().getName() + ".");
+					Main.this.info(targetPlayer, "&aSending you to " + player.getServer().getInfo().getName() + ".");
 					targetPlayer.connect(player.getServer().getInfo());
 				}
 			}
